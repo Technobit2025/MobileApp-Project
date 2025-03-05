@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/MobileApp-Project.iml" filepath="$PROJECT_DIR$/.idea/MobileApp-Project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Sistem_Informasi_Menejemen_Satpam.iml" filepath="$PROJECT_DIR$/.idea/modules/Sistem_Informasi_Menejemen_Satpam.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Sistem_Informasi_Menejemen_Satpam.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Sistem_Informasi_Menejemen_Satpam.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Sistem_Informasi_Menejemen_Satpam.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Sistem_Informasi_Menejemen_Satpam.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Sistem_Informasi_Menejemen_Satpam.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Sistem_Informasi_Menejemen_Satpam.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Sistem_Informasi_Menejemen_Satpam.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Sistem_Informasi_Menejemen_Satpam.app.unitTest.iml" />
     </modules>
   </component>
 </project>

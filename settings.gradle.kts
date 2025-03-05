@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MobileAppTechnobit"
+rootProject.name = "Sistem Informasi Menejemen Satpam"
 include(":app")
  
