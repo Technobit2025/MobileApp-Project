@@ -177,14 +177,18 @@ fun ScheduleCard(
     error: String?
 ) {
     val nearestSchedule = schedules?.firstOrNull()
+
     nearestSchedule?.let { schedule ->
         Card(
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(Color.White),
             elevation = CardDefaults.cardElevation(4.dp),
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 10.dp)
+                .clickable { // Klik seluruh card
+                    navCtrl.navigate("schedule_screen")
+                }
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(
@@ -192,7 +196,7 @@ fun ScheduleCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = schedule.tanggal,
+                        text = schedule.tanggal ?: "",
                         fontFamily = robotoFontFamily,
                         fontWeight = FontWeight.Medium,
                         fontSize = 17.sp
@@ -242,7 +246,7 @@ fun ScheduleCard(
                             fontSize = 16.sp
                         )
                         Text(
-                            text = schedule.jam_mulai,
+                            text = schedule.jam_mulai ?: "",
                             fontFamily = robotoFontFamily
                         )
                     }
@@ -269,7 +273,7 @@ fun ScheduleCard(
                             fontSize = 16.sp
                         )
                         Text(
-                            text = schedule.jam_selesai,
+                            text = schedule.jam_selesai ?: "",
                             fontFamily = robotoFontFamily
                         )
                     }
@@ -278,6 +282,7 @@ fun ScheduleCard(
         }
     }
 }
+
 
 
 @Composable

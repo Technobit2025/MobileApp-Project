@@ -1,6 +1,5 @@
 package com.example.mobileapptechnobit.ViewModel
 
-
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,7 +32,8 @@ class ScheduleViewModel : ViewModel() {
                     companyId = companyId
                 )
                 if (response.isSuccessful) {
-                    scheduleList = response.body() ?: emptyList()
+                    val body = response.body()
+                    scheduleList = body?.data ?: emptyList()
                 } else {
                     errorMessage = "Gagal mengambil data: ${response.code()}"
                 }

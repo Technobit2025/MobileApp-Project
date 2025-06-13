@@ -9,7 +9,7 @@ import com.example.mobileapptechnobit.data.remote.Presensi
 import com.example.mobileapptechnobit.data.remote.PresensiResponse
 import com.example.mobileapptechnobit.data.remote.Permission
 import com.example.mobileapptechnobit.data.remote.HistoryPresensiResponseItem
-import com.example.mobileapptechnobit.data.remote.PatrolScheduleResponse
+import com.example.mobileapptechnobit.data.remote.PatrolScheduleWrapper
 import com.example.mobileapptechnobit.data.remote.PatroliRequest
 import com.example.mobileapptechnobit.data.remote.PermissionResponse
 import com.example.mobileapptechnobit.data.remote.SalaryDetailResponse
@@ -96,16 +96,16 @@ interface ApiService{
     ): HistoryPatroliResponse // Get Data by Gson Object contains Array
 
 
-    // API jadwal
+
     @GET("v1/android/company-profile")
     suspend fun getCompanyProfile(@Header("Authorization") token: String): Response<CompanyProfileResponse>
 
-    @GET("v1/android/jadwal-patroli")
+    @GET("v1/android/schedules")
     suspend fun getPatrolSchedules(
         @Header("Authorization") token: String,
         @Query("date") date: String? = null,
         @Query("company_id") companyId: Int? = null
-    ): Response<List<PatrolScheduleResponse>>
+    ): Response<PatrolScheduleWrapper>
 
     @POST("v1/android/patroli")
     suspend fun submitPatroli(@Header("Authorization") token: String, @Body request: PatroliRequest): Response<ResponseBody>

@@ -133,10 +133,14 @@ fun ScheduleCardFromApi(schedule: PatrolScheduleResponse, navCtrl: NavController
                 Box(
                     modifier = Modifier
                         .background(
-                            color = when (schedule.waktu.lowercase()) {
-                                "pagi" -> Color(0xFFFFFF00)
-                                "siang" -> Color(0xFFFFB800)
-                                "malam" -> Color(0xFF7EC8E3)
+                            color = when (schedule.waktu?.lowercase()) {
+                                "senin" -> Color(0xFFFFE082)   // Kuning lembut
+                                "selasa" -> Color(0xFFFFCC80)  // Oranye muda
+                                "rabu" -> Color(0xFFFFAB91)   // Oranye merah muda
+                                "kamis" -> Color(0xFFFF8A65)   // Oranye terang
+                                "jumat" -> Color(0xFF81D4FA)   // Biru muda
+                                "sabtu" -> Color(0xFF4FC3F7)   // Biru langit
+                                "minggu" -> Color(0xFFB39DDB)   // Ungu pastel
                                 else -> Color.Gray
                             },
                             shape = RoundedCornerShape(4.dp)
@@ -144,7 +148,7 @@ fun ScheduleCardFromApi(schedule: PatrolScheduleResponse, navCtrl: NavController
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = schedule.waktu.replaceFirstChar { it.uppercase() },
+                        text = schedule.waktu?.replaceFirstChar { it.uppercase() } ?: "Tidak diketahui",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -167,6 +171,7 @@ fun ScheduleCardFromApi(schedule: PatrolScheduleResponse, navCtrl: NavController
                     color = Color.Black
                 )
             }
+
             Divider(
                 color = Color.LightGray,
                 thickness = 1.dp,
@@ -177,14 +182,12 @@ fun ScheduleCardFromApi(schedule: PatrolScheduleResponse, navCtrl: NavController
 
             // Lokasi patrol
             Text(
-                text = "Lokasi: ${schedule.lokasi}",
+                text = "Lokasi: ${schedule.lokasi ?: "-"}",
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 18.sp
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
-
 
             // Baris Jam Mulai - Selesai
             Row(
@@ -204,7 +207,10 @@ fun ScheduleCardFromApi(schedule: PatrolScheduleResponse, navCtrl: NavController
                         fontWeight = FontWeight(500),
                         fontSize = 16.sp
                     )
-                    Text(text = schedule.jam_mulai, fontFamily = robotoFontFamily)
+                    Text(
+                        text = schedule.jam_mulai ?: "-",
+                        fontFamily = robotoFontFamily
+                    )
                 }
 
                 Spacer(Modifier.weight(1f))
@@ -230,22 +236,25 @@ fun ScheduleCardFromApi(schedule: PatrolScheduleResponse, navCtrl: NavController
                         fontWeight = FontWeight(500),
                         fontSize = 16.sp
                     )
-                    Text(text = schedule.jam_selesai, fontFamily = robotoFontFamily)
+                    Text(
+                        text = schedule.jam_selesai ?: "-",
+                        fontFamily = robotoFontFamily
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Info lokasi & rekan
-
+            // Info rekan tugas
             Text(
-                "Rekan tugas: ${schedule.rekan_tugas.joinToString(", ")}",
+                text = "Rekan tugas: ${schedule.rekan_tugas ?: "-"}",
                 fontSize = 14.sp,
                 fontFamily = robotoFontFamily
             )
         }
     }
 }
+
 
 
 
