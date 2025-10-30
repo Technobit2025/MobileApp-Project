@@ -1,7 +1,6 @@
 package com.example.mobileapptechnobit.ui
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -12,15 +11,12 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.location.Geocoder
 import android.location.Location
-import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.util.Base64
 import android.util.Log
-import android.util.Size
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,7 +37,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
@@ -53,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.example.mobileapptechnobit.NfcReaderViewModel
 import com.example.mobileapptechnobit.R
 import com.example.mobileapptechnobit.Screen
 import com.example.mobileapptechnobit.ViewModel.PatroliViewModel
@@ -73,7 +69,8 @@ fun CameraPatroli(
     navCtrl: NavController,
     token: String,
     qrToken: String,
-    viewModel: PatroliViewModel
+    viewModel: PatroliViewModel,
+    nfcViewModel: NfcReaderViewModel
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -92,9 +89,17 @@ fun CameraPatroli(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions[Manifest.permission.CAMERA] == true) {
-            Toast.makeText(context, "Camera permission granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Camera permission granted",
+                Toast.LENGTH_SHORT
+            ).show()
         } else {
-            Toast.makeText(context, "Camera permission denied", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Camera permission denied",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -151,7 +156,10 @@ fun CameraPatroli(
                         .aspectRatio(3f / 4f),
                     contentAlignment = Alignment.Center
                 ) {
-                    CameraPreview(controller = cameraController, modifier = Modifier.fillMaxSize())
+                    CameraPreview(
+                        controller = cameraController,
+                        modifier = Modifier.fillMaxSize()
+                    )
 
                     Image(
                         painter = painterResource(id = R.drawable.camera_frame),
@@ -165,7 +173,11 @@ fun CameraPatroli(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .offset(y = (-56).dp)
-                            .background(colorResource(id = R.color.black100).copy(alpha = 0.5f))
+                            .background(
+                                colorResource(id = R.color.black100).copy(
+                                    alpha = 0.5f
+                                )
+                            )
                             .padding(4.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -201,18 +213,31 @@ fun CameraPatroli(
                                 location = location,
                                 onPhotoTaken = { bitmap ->
                                     viewModel.onTakePhoto(bitmap, token)
-                                    Log.d("CameraPatroli", "Navigating to FormPatroli with QR Info: $qrToken")
+                                    Log.d(
+                                        "CameraPatroli",
+                                        "Navigating to FormPatroli with QR Info: $qrToken"
+                                    )
                                     isProcessingPhoto = false // loading selesai
-                                    navCtrl.navigate(Screen.FormPatroli.route.replace("{qrToken}", Uri.encode(Gson().toJson(qrInfo))))
+                                    navCtrl.navigate(
+                                        Screen.FormPatroli.route.replace(
+                                            "{qrToken}",
+                                            Uri.encode(Gson().toJson(qrInfo))
+                                        )
+                                    )
                                 },
-                                onProcessingDone = { isProcessingPhoto = false } // loading selesai jika error
+                                onProcessingDone = {
+                                    isProcessingPhoto = false
+                                } // loading selesai jika error
                             )
                         }
                     },
                     modifier = Modifier
                         .size(72.dp)
                         .align(Alignment.Center)
-                        .background(color = androidx.compose.ui.graphics.Color.White, shape = CircleShape),
+                        .background(
+                            color = androidx.compose.ui.graphics.Color.White,
+                            shape = CircleShape
+                        ),
                     enabled = !isProcessingPhoto
                 ) {
                     Image(
@@ -276,7 +301,10 @@ fun CameraPatTitle(modifier: Modifier = Modifier, navCtrl: NavController) {
             .padding(vertical = 30.dp)
     ) {
         IconButton(
-            onClick = { navCtrl.navigate(Screen.Patroli.route) },
+            onClick = {
+                navCtrl.navigateUp()
+//                navCtrl.navigate(Screen.Patroli.route)
+            },
             Modifier.padding(start = 10.dp)
         ) {
             Icon(
@@ -320,7 +348,13 @@ private fun takePhoto(
                     }
 
                     val rotatedBitmap = Bitmap.createBitmap(
-                        image.toBitmap(), 0, 0, image.width, image.height, matrix, true
+                        image.toBitmap(),
+                        0,
+                        0,
+                        image.width,
+                        image.height,
+                        matrix,
+                        true
                     )
 
                     val address = getAddressFromLocation(context, location)
@@ -334,8 +368,16 @@ private fun takePhoto(
                     onPhotoTaken(bitmapWithWatermark)
 
                 } catch (e: Exception) {
-                    Log.e("CameraPatroli", "Error processing photo: ${e.message}", e)
-                    Toast.makeText(context, "Error processing photo: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Log.e(
+                        "CameraPatroli",
+                        "Error processing photo: ${e.message}",
+                        e
+                    )
+                    Toast.makeText(
+                        context,
+                        "Error processing photo: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } finally {
                     onProcessingDone?.invoke()
                     image.close()
@@ -344,17 +386,28 @@ private fun takePhoto(
 
             override fun onError(exception: ImageCaptureException) {
                 super.onError(exception)
-                Toast.makeText(context, "Ulangi mengambil gambar: ${exception.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Ulangi mengambil gambar: ${exception.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 onProcessingDone?.invoke()
             }
         }
     )
 }
 
-fun getCurrentLocationReal(context: Context, onLocationReady: (Location?) -> Unit) {
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+fun getCurrentLocationReal(
+    context: Context,
+    onLocationReady: (Location?) -> Unit
+) {
+    val fusedLocationClient =
+        LocationServices.getFusedLocationProviderClient(context)
     if (
-        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     ) {
         val locationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -372,7 +425,11 @@ fun getCurrentLocationReal(context: Context, onLocationReady: (Location?) -> Uni
                 }
             }
         }
-        fusedLocationClient.requestLocationUpdates(locationRequest, callback, null)
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            callback,
+            null
+        )
 
         CoroutineScope(Dispatchers.Main).launch {
             delay(15000)
@@ -385,7 +442,11 @@ fun getCurrentLocationReal(context: Context, onLocationReady: (Location?) -> Uni
                             if (lastLocation != null) {
                                 onLocationReady(lastLocation)
                             } else {
-                                Toast.makeText(context, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Lokasi tidak ditemukan",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 onLocationReady(null)
                             }
                         }
@@ -393,23 +454,38 @@ fun getCurrentLocationReal(context: Context, onLocationReady: (Location?) -> Uni
                     .addOnFailureListener {
                         if (!called) {
                             called = true
-                            Toast.makeText(context, "Lokasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Lokasi tidak ditemukan",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             onLocationReady(null)
                         }
                     }
             }
         }
     } else {
-        Toast.makeText(context, "Izin lokasi tidak diberikan", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            context,
+            "Izin lokasi tidak diberikan",
+            Toast.LENGTH_SHORT
+        ).show()
         onLocationReady(null)
     }
 }
 
-private fun getAddressFromLocation(context: Context, location: Location?): String {
+private fun getAddressFromLocation(
+    context: Context,
+    location: Location?
+): String {
     return if (location != null) {
         try {
             val geocoder = Geocoder(context, Locale.getDefault())
-            val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+            val addresses = geocoder.getFromLocation(
+                location.latitude,
+                location.longitude,
+                1
+            )
             if (!addresses.isNullOrEmpty()) {
                 addresses[0].getAddressLine(0)
             } else {
@@ -424,7 +500,12 @@ private fun getAddressFromLocation(context: Context, location: Location?): Strin
     }
 }
 
-private fun addWatermark(context: Context, bitmap: Bitmap, location: Location?, address: String): Bitmap {
+private fun addWatermark(
+    context: Context,
+    bitmap: Bitmap,
+    location: Location?,
+    address: String
+): Bitmap {
     val result = bitmap.copy(Bitmap.Config.ARGB_8888, true)
     val canvas = Canvas(result)
     val paint = Paint().apply {
@@ -436,7 +517,8 @@ private fun addWatermark(context: Context, bitmap: Bitmap, location: Location?, 
     val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     val dateTime = sdf.format(Date())
 
-    val locationText = "Lat: ${location?.latitude ?: "Unknown"}, Lng: ${location?.longitude ?: "Unknown"}"
+    val locationText =
+        "Lat: ${location?.latitude ?: "Unknown"}, Lng: ${location?.longitude ?: "Unknown"}"
     val addressText = address
 
     val fullText = "$dateTime\n$locationText\n$addressText"
@@ -446,7 +528,13 @@ private fun addWatermark(context: Context, bitmap: Bitmap, location: Location?, 
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         val staticLayout = android.text.StaticLayout.Builder
-            .obtain(fullText, 0, fullText.length, android.text.TextPaint(paint), canvas.width - 20)
+            .obtain(
+                fullText,
+                0,
+                fullText.length,
+                android.text.TextPaint(paint),
+                canvas.width - 20
+            )
             .setAlignment(android.text.Layout.Alignment.ALIGN_NORMAL)
             .setLineSpacing(1f, 1f)
             .setIncludePad(false)
@@ -468,7 +556,15 @@ private fun addWatermark(context: Context, bitmap: Bitmap, location: Location?, 
 
 private fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Int): Bitmap {
     val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
-    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    return Bitmap.createBitmap(
+        bitmap,
+        0,
+        0,
+        bitmap.width,
+        bitmap.height,
+        matrix,
+        true
+    )
 }
 
 private fun ImageProxy.toBitmap(): Bitmap {
@@ -486,9 +582,17 @@ fun RequestLocationPermissions() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
-            Toast.makeText(context, "Location permission granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Location permission granted",
+                Toast.LENGTH_SHORT
+            ).show()
         } else {
-            Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Location permission denied",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -515,7 +619,10 @@ fun RequestLocationPermissions() {
 }
 
 @Composable
-fun CameraPreview(controller: LifecycleCameraController, modifier: Modifier = Modifier) {
+fun CameraPreview(
+    controller: LifecycleCameraController,
+    modifier: Modifier = Modifier
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
     AndroidView(
         factory = { context ->
@@ -530,14 +637,20 @@ fun CameraPreview(controller: LifecycleCameraController, modifier: Modifier = Mo
 
 private fun triggerVibration(context: Context) {
     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        val vibratorManager =
+            context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
         vibratorManager.defaultVibrator
     } else {
         context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
+        vibrator.vibrate(
+            VibrationEffect.createOneShot(
+                200,
+                VibrationEffect.DEFAULT_AMPLITUDE
+            )
+        )
     } else {
         vibrator.vibrate(200)
     }

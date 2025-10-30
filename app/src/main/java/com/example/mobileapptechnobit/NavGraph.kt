@@ -54,7 +54,12 @@ import kotlinx.coroutines.withContext
 
 @SuppressLint("RememberReturnType")
 @Composable
-fun NavGraph(navController: NavHostController, authViewModel: AuthViewModel) {
+fun NavGraph(
+    navController: NavHostController,
+    authViewModel: AuthViewModel,
+    nfcViewModel: NfcReaderViewModel,
+    onEnableNfcReader: () ->Unit
+) {
     val context = LocalContext.current
     val sharedPref = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
     val token = remember { sharedPref.getString("AUTH_TOKEN", null) }
@@ -245,7 +250,7 @@ fun NavGraph(navController: NavHostController, authViewModel: AuthViewModel) {
             arguments = listOf(navArgument("qrToken") { type = NavType.StringType })
         ) { entry ->
             val qrToken = entry.arguments?.getString("qrToken")?.let { Uri.decode(it) } ?: ""
-            CameraPatroli(navCtrl = navController, token = token ?: "", qrToken = qrToken, viewModel = patroliViewModel)
+            CameraPatroli(navCtrl = navController, token = token ?: "", qrToken = qrToken, viewModel = patroliViewModel,nfcViewModel = nfcViewModel)
         }
         composable("detail_gaji") {
             val context = LocalContext.current
@@ -263,6 +268,10 @@ fun NavGraph(navController: NavHostController, authViewModel: AuthViewModel) {
         }
         composable(Screen.PatroliSukses.route) {
             PatroliSuksesScreen(navController, token = token ?: "")
+        }
+        composable(Screen.PatroliNfc.route){
+            nfcViewModel.clearUid()
+            PatroliNfcScreen(navCtrl = navController,nfcViewModel = nfcViewModel,onEnableNfcReader = onEnableNfcReader)
         }
     }
 }
@@ -302,4 +311,8 @@ sealed class Screen(val route: String) {
     object CameraPatroli : Screen("camera_patroli_screen/{qrToken}")
     object FormPatroli : Screen("form_patroli_screen/{qrToken}")
     object PatroliSukses : Screen("patroli_sukses_screen")
+
+    object PatroliNfc:Screen("patroli_nfc_screen")
+
+
 }
