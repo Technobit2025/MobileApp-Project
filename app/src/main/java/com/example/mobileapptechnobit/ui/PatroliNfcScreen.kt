@@ -1,5 +1,6 @@
 package com.example.mobileapptechnobit.ui
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -39,18 +40,27 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.request.Disposable
 import com.example.mobileapptechnobit.NfcReaderViewModel
 import com.example.mobileapptechnobit.R
 import com.example.mobileapptechnobit.Screen
+import com.example.mobileapptechnobit.ViewModel.PatroliNfcViewModel
+import com.example.mobileapptechnobit.ViewModel.PatroliNfcViewModelFactory
+import com.example.mobileapptechnobit.ViewModel.ProfileViewModel
+import com.example.mobileapptechnobit.ViewModel.ProfileViewModelFactory
 import com.example.mobileapptechnobit.data.remote.PatroliQrInfo
+import com.example.mobileapptechnobit.data.remote.Resource
+import com.example.mobileapptechnobit.data.repository.CheckPatrolSpotRepository
+import com.example.mobileapptechnobit.data.repository.ProfileRepository
 import com.example.mobileapptechnobit.ui.theme.robotoFontFamily
 import com.google.gson.Gson
 
@@ -60,7 +70,7 @@ fun PatroliNfcScreen(
     modifier: Modifier = Modifier,
     navCtrl: NavController,
     nfcViewModel: NfcReaderViewModel,
-    onEnableNfcReader: () ->Unit
+    onEnableNfcReader: () -> Unit
 ) {
     val dummyPatroliNfcInfo = PatroliQrInfo(
         id = 12,
@@ -73,28 +83,84 @@ fun PatroliNfcScreen(
         description = "null",
     )
     var error by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
     var readNfcTagUid by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val uidHex by nfcViewModel.uidHex.collectAsState()
 
+    val repository = CheckPatrolSpotRepository()
+    val context = LocalContext.current
+    val sharedPref =
+        context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+    val token = sharedPref.getString("AUTH_TOKEN", null) ?: ""
+    val viewModel: PatroliNfcViewModel = viewModel(
+        factory = PatroliNfcViewModelFactory(
+            repository = repository,
+        )
+    )
+    val checkPatrolSpotResponse =
+        viewModel.checkPatrolSpotResponse.collectAsState()
+//    val patroliNfcInfo = checkPatrolSpotResponse.value?.data
+
     LaunchedEffect(uidHex) {
         if (uidHex != null) {
             //call api to check uid, if success, encode json response and navigate to next screen
-            Log.d("uid", uidHex!!)
-            val encodedDummyNfcInfo =
-                Uri.encode(Gson().toJson(dummyPatroliNfcInfo))
+            Log.d("uidInternal", uidHex!!)
+            viewModel.getPatrolSpotDataByNfcUid(
+                token = token,
+                nfcTagUid = uidHex!!
+            )
+
+            //val encodedDummyNfcInfo = Uri.encode(Gson().toJson(dummyPatroliNfcInfo))
+//            val encodedNfcInfo = Uri.encode(Gson().toJson(patroliNfcInfo))
+//
+//            navCtrl.navigate(
+//                Screen.CameraPatroli.route.replace(
+//                    "{qrToken}",
+//                    encodedNfcInfo
+//                )
+//            )
+//            nfcViewModel.clearUid()
+        }
+    }
+
+//    LaunchedEffect(patroliNfcInfo) {
+//        if (patroliNfcInfo != null) {
+//            val encodedNfcInfo = Uri.encode(Gson().toJson(patroliNfcInfo))
+//            Log.d("NFCPATROLI", "$encodedNfcInfo")
+//            navCtrl.navigate(
+//                Screen.CameraPatroli.route.replace(
+//                    "{qrToken}",
+//                    encodedNfcInfo
+//                )
+//            )
+//            nfcViewModel.clearUid()
+//            readNfcTagUid = ""
+//        }
+//    }
+
+    when(checkPatrolSpotResponse.value){
+        is Resource.Idle->{}
+        is Resource.Loading -> {}
+        is Resource.Error -> {
+            errorMessage  = (checkPatrolSpotResponse.value as Resource.Error).message
+            error = true
+            Log.d("UIDAFTERERROR","$uidHex, $readNfcTagUid")
+        }
+        is Resource.Success -> {
+            val patroliNfcInfo  = (checkPatrolSpotResponse.value as Resource.Success).data.data
+            val encodedNfcInfo = Uri.encode(Gson().toJson(patroliNfcInfo))
+            Log.d("NFCPATROLI", "$encodedNfcInfo")
             navCtrl.navigate(
                 Screen.CameraPatroli.route.replace(
                     "{qrToken}",
-                    encodedDummyNfcInfo
+                    encodedNfcInfo
                 )
             )
             nfcViewModel.clearUid()
+            readNfcTagUid = ""
         }
     }
-//    LaunchedEffect(Unit) {
-//        onEnableNfcReader()
-//    }
 
     Scaffold(
         topBar = {
@@ -126,21 +192,31 @@ fun PatroliNfcScreen(
                 .focusRequester(focusRequester)
                 .focusable()
                 .onKeyEvent { event ->
-                    if (event.type == KeyEventType.KeyDown && event.utf16CodePoint.toChar().isLetterOrDigit()) {
+                    if (event.type == KeyEventType.KeyDown && event.utf16CodePoint.toChar()
+                            .isLetterOrDigit()
+                    ) {
                         val char = event.utf16CodePoint.toChar()
                         readNfcTagUid += char
                         true
                     } else if (event.type == KeyEventType.KeyDown && event.utf16CodePoint.toChar() == '\n') {
-                        val reversedUid = nfcViewModel.reversedDecimalToHex(readNfcTagUid)
-                        Log.d("uid", reversedUid)
-                        val encodedDummyNfcInfo =
-                            Uri.encode(Gson().toJson(dummyPatroliNfcInfo))
-                        navCtrl.navigate(
-                            Screen.CameraPatroli.route.replace(
-                                "{qrToken}",
-                                encodedDummyNfcInfo
-                            )
+                        val reversedUid =
+                            nfcViewModel.reversedDecimalToHex(readNfcTagUid)
+                        viewModel.getPatrolSpotDataByNfcUid(
+                            token = token,
+                            nfcTagUid = reversedUid
                         )
+                        Log.d("reverseduid", reversedUid)
+
+                        //val encodedDummyNfcInfo = Uri.encode(Gson().toJson(dummyPatroliNfcInfo))
+
+//                        val encodedNfcInfo = Uri.encode(Gson().toJson(patroliNfcInfo))
+//
+//                        navCtrl.navigate(
+//                            Screen.CameraPatroli.route.replace(
+//                                "{qrToken}",
+//                                encodedNfcInfo
+//                            )
+//                        )
                         readNfcTagUid = ""
                         true
                     } else {
@@ -153,8 +229,8 @@ fun PatroliNfcScreen(
             if (error) {
                 ResponseNfc(
                     imageId = R.drawable.selesai,
-                    title = "Gagal Melakukan Scanning",
-                    subTitle = "Terjadi kesalahan dalam melakukan verifikasi Kartu NFC"
+                    title = "Akses gagal",
+                    subTitle = errorMessage
                 )
             } else {
                 ResponseNfc(

@@ -64,6 +64,7 @@ class MainActivity : ComponentActivity(), NfcAdapter.ReaderCallback {
         }
     }
 
+    //all of below for internal nfc development
     override fun onResume() {
         super.onResume()
         nfcAdapter?.enableReaderMode(

@@ -218,6 +218,7 @@ fun CameraPatroli(
                                         "Navigating to FormPatroli with QR Info: $qrToken"
                                     )
                                     isProcessingPhoto = false // loading selesai
+                                    Log.d("CAMERAPATROLI","$qrInfo")
                                     navCtrl.navigate(
                                         Screen.FormPatroli.route.replace(
                                             "{qrToken}",

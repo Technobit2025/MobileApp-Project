@@ -235,7 +235,7 @@ fun FormPatroli(
                                                 latitude = qrInfo.latitude.toString(),
                                                 longitude = qrInfo.longitude.toString()
                                             )
-
+                                            Log.d("FORMPATROLI","$qrInfo")
                                             isLoading = false
                                             navCtrl.navigate(Screen.PatroliSukses.route)
                                         } catch (e: Exception) {

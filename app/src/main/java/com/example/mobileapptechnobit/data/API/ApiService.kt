@@ -1,6 +1,8 @@
 package com.example.mobileapptechnobit.data.API
 
 import com.example.mobileapptechnobit.data.remote.AlternatePermissionResponse
+import com.example.mobileapptechnobit.data.remote.CheckNfcRequest
+import com.example.mobileapptechnobit.data.remote.CheckPatrolSpotResponse
 import com.example.mobileapptechnobit.data.remote.ClockOutRequest
 import com.example.mobileapptechnobit.data.remote.CompanyLocation
 import com.example.mobileapptechnobit.data.remote.CompanyProfileResponse
@@ -128,6 +130,12 @@ interface ApiService{
 
     @POST("v1/android/patroli")
     suspend fun submitPatroli(@Header("Authorization") token: String, @Body request: PatroliRequest): Response<ResponseBody>
+
+    @POST("v1/check-nfc")
+    suspend fun checkPatrolSpot(
+        @Header("Authorization") token: String,
+        @Body nfcTagUid: CheckNfcRequest
+    ): Response<CheckPatrolSpotResponse>
 
     @GET("v1/android/salary-detail")
     suspend fun getSalaryDetail(
