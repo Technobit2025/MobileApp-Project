@@ -27,4 +27,8 @@ class PatroliNfcViewModel(private val repository: CheckPatrolSpotRepository) :
             )
         }
     }
+
+    fun resetState(){
+        _checkPatrolSpotResponse.value = Resource.Idle()
+    }
 }

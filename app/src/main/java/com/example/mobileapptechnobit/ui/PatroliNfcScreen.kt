@@ -145,7 +145,6 @@ fun PatroliNfcScreen(
         is Resource.Error -> {
             errorMessage  = (checkPatrolSpotResponse.value as Resource.Error).message
             error = true
-            Log.d("UIDAFTERERROR","$uidHex, $readNfcTagUid")
         }
         is Resource.Success -> {
             val patroliNfcInfo  = (checkPatrolSpotResponse.value as Resource.Success).data.data
@@ -157,6 +156,7 @@ fun PatroliNfcScreen(
                     encodedNfcInfo
                 )
             )
+            viewModel.resetState()
             nfcViewModel.clearUid()
             readNfcTagUid = ""
         }
